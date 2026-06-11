@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: datakite-ledger
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ledger_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: LedgerHikariPool
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      idle-timeout: 300000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        default_schema: public
+    show-sql: false
+    open-in-view: false
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+    time-zone: UTC
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  error:
+    include-message: always
+    include-binding-errors: always
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    com.datakite.ledger: DEBUG
+    org.hibernate.SQL: WARN
+    org.springframework.web: INFO

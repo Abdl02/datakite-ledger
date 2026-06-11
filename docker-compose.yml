@@ -1,0 +1,58 @@
+services:
+
+  # ── PostgreSQL ───────────────────────────────────────────────────────────────
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ledger_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ledger_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Spring Boot Backend ──────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Override application.yml datasource so it reaches the db container
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ledger_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 6
+      start_period: 30s
+
+  # ── Next.js Frontend ─────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # next.config.ts reads BACKEND_URL at build time to compile rewrites into
+        # routes-manifest.json — it must be a build arg, not a runtime env var.
+        BACKEND_URL: http://backend:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

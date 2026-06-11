@@ -69,7 +69,7 @@ The error message "Content not allowed in prolog" is the canonical Maven/SAX par
 
 **Resolution:** The AI was explicitly prompted to **rewrite `pom.xml` from scratch with clean UTF-8 encoding**, with the instruction to ensure no BOM or non-printable characters were present. The regenerated file parsed successfully, and `mvn spring-boot:run` completed without errors on the subsequent attempt.
 
-**Lesson documented:** AI code generators can silently introduce encoding artifacts when composing XML files. Validating build files with an actual compile step before moving to the next phase is essential.
+**Lesson documented:** AI code generators can silently introduce encoding artifacts when composing XML files. Validating build files with an actual compile step before moving to the next phase is essential. The successful resolution of this artifact error served as a baseline for all subsequent generation tasks, ensuring that project configuration files were verified for encoding integrity immediately after generation.
 
 ---
 
